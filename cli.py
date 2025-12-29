@@ -182,12 +182,25 @@ def display_audit_summary(result: dict):
     console.print("")
 
 def main():
-    parser = argparse.ArgumentParser(description="🤖 Autonomous Agent CLI")
+    parser = argparse.ArgumentParser(
+        description="🤖 Autonomous Codebase Auditor v1.0",
+        epilog="""
+Examples:
+  %(prog)s "Audit this codebase"
+  %(prog)s --mode codebase_auditor "Find TODO comments"
+  %(prog)s --mode codebase_auditor "Search for import statements" --verbose
+  %(prog)s "List files" --quiet --output results.json
+
+For more information, visit: https://github.com/yourusername/autonomous-auditor
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("task", help="Task for the agent to execute")
     parser.add_argument("--config", default="config.json", help="Configuration file")
     parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     parser.add_argument("--mode", default="default", choices=["default", "codebase_auditor"], help="Agent mode")
     parser.add_argument("--output", help="Output file for results (JSON)")
+    parser.add_argument("--json", action="store_true", help="Output results as JSON to stdout")
     parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
     parser.add_argument("--verbose", "-v", action="store_true", help="Detailed output")
     
@@ -202,10 +215,22 @@ def main():
         if args.output:
             with open(args.output, 'w') as f:
                 json.dump(result, f, indent=2)
-            if not args.quiet:
+            if not args.quiet and not args.json:
                 console.print(f"[green]Results saved to {args.output}[/green]")
         
-        if not args.quiet:
+        if args.json:
+            # Machine-consumable JSON output
+            json_output = {
+                "task": result.get("task", ""),
+                "status": "success" if result.get("step_success", False) else "failed",
+                "steps_completed": result.get("step_count", 0),
+                "plan_steps": len(result.get("plan", [])),
+                "failures": result.get("failure_count", 0),
+                "result": result.get("result", ""),
+                "plan": result.get("plan", [])
+            }
+            print(json.dumps(json_output, indent=2))
+        elif not args.quiet:
             display_results(result, args.verbose)
         else:
             # Quiet mode - just print success/failure

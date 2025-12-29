@@ -1,0 +1,11 @@
+include README.md
+include LICENSE
+include ARCHITECTURE.md
+include SPECIALIZATION.md
+recursive-include prompts *.txt
+include .env.example
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude .git*
+global-exclude *.log
+global-exclude *.db

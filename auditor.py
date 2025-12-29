@@ -105,7 +105,19 @@ class CodebaseAuditor:
         console.print(table)
 
 def main():
-    parser = argparse.ArgumentParser(description="🔍 Codebase Auditor - Security & Quality Analysis")
+    parser = argparse.ArgumentParser(
+        description="🔍 Autonomous Codebase Auditor v1.0 - Specialized Security & Quality Analysis",
+        epilog="""
+Examples:
+  %(prog)s --audit security
+  %(prog)s --audit todos --quiet
+  %(prog)s --audit full --output audit-report.json
+  %(prog)s --list
+
+For more information, visit: https://github.com/yourusername/autonomous-auditor
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("--audit", choices=list(CodebaseAuditor.AUDIT_TASKS.keys()) + ["full"], 
                        default="full", help="Type of audit to run")
     parser.add_argument("--config", default="config.json", help="Configuration file")

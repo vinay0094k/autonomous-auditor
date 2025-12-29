@@ -1,12 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "langgraph-project1"
-version = "0.1.0"
-description = "Add your description here"
+name = "autonomous-auditor"
+version = "1.0.0"
+description = "A deterministic, invariant-safe, domain-specialized autonomous codebase auditor"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
+authors = [
+    {name = "Autonomous Agent System"},
+]
+keywords = ["audit", "codebase", "autonomous", "agent", "langgraph"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Quality Assurance",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "langgraph>=1.0.5",
     "ollama>=0.6.1",
     "python-dotenv>=1.2.1",
     "rich>=14.2.0",
+]
+
+[project.scripts]
+autonomous-auditor = "cli:main"
+auditor = "auditor:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+exclude = [
+    "*.log",
+    "*.db", 
+    "__pycache__",
+    ".git*",
+    "test_*"
 ]

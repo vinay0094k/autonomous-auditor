@@ -1,30 +1,147 @@
 # Autonomous Agent System v1.0
 
-A deterministic, invariant-safe, domain-specialized autonomous auditor with bounded behavior and production-grade failure handling.
+**A Deterministic Autonomous Auditor** - Production-ready codebase analysis with bounded behavior and graceful failure handling.
 
-## What this tool does
+## What This Is NOT
 
-- **Codebase Auditing**: Analyzes source code repositories for TODO comments, FIXME comments, import patterns, and configuration files
-- **Autonomous Planning**: Generates and executes structured plans using canonical audit patterns
-- **Safe Execution**: Bounded search operations with fallback handling and graceful degradation
-- **Memory Persistence**: Maintains audit history across sessions using SQLite
-- **Self-Healing**: Automatically revises plans when steps fail repeatedly
+- ❌ **NOT a static analyzer** - No AST parsing or semantic analysis
+- ❌ **NOT a security scanner** - No vulnerability scoring or CVE detection  
+- ❌ **NOT an AI agent** - No chat interface or general problem solving
+- ❌ **NOT a dependency resolver** - No package analysis or version checking
 
-## What this tool does NOT do
+## What This IS
 
-- Code execution or modification
-- Semantic or AST analysis  
-- Security scoring or vulnerability assessment
-- Dependency resolution or package analysis
-- Multi-language parsing beyond text search
-- Real-time monitoring or continuous integration
+- ✅ **Deterministic Autonomous Auditor** - Reliable, predictable codebase inspection
+- ✅ **Bounded and Safe** - Read-only operations with strict limits
+- ✅ **Self-Healing** - Automatically recovers from failures
+- ✅ **Production-Ready** - Frozen architecture with tested guarantees
 
-## Architecture
+## Why This Matters
 
-- **Frozen Core**: Immutable execution engine with deterministic state transitions
-- **Specialization Layer**: Domain-specific prompts and canonical patterns
-- **Tool Boundaries**: Read-only file operations with strict validation
-- **Failure Handling**: Safe degradation with retry logic and plan revision
+**Faster** - No complex parsing, just targeted text search  
+**Predictable** - Same input always produces same output  
+**Explainable** - Clear audit trails and bounded operations  
+**Zero False Confidence** - Never claims to find what it cannot verify
+
+## Installation
+
+```bash
+# Install from PyPI (when published)
+pip install autonomous-auditor
+
+# Or install from source
+git clone https://github.com/yourusername/autonomous-auditor
+cd autonomous-auditor
+pip install -e .
+```
+
+## Quick Start
+
+```bash
+# Basic codebase audit
+autonomous-auditor --mode codebase_auditor "Audit this codebase"
+
+# Find specific patterns
+autonomous-auditor --mode codebase_auditor "Search for TODO pattern"
+
+# Machine-readable output for CI
+autonomous-auditor --mode codebase_auditor "Audit this codebase" --json
+
+# Full audit suite
+auditor --audit full
+
+# Get help
+autonomous-auditor --help
+```
+
+## Configuration
+
+Create a `.env` file in your project directory:
+
+```bash
+OLLAMA_MODEL=llama3.1:8b
+OLLAMA_HOST=http://localhost:11435
+MAX_STEPS=8
+RETRY_LIMIT=2
+LOG_LEVEL=INFO
+```
+
+## CI Integration
+
+```yaml
+# .github/workflows/audit.yml
+name: Codebase Audit
+on: [push, pull_request]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install auditor
+      run: pip install autonomous-auditor
+    
+    - name: Run audit
+      run: autonomous-auditor "Audit this repo" --json --output audit-report.json
+    
+    - name: Check TODO count
+      run: |
+        TODO_COUNT=$(jq -r '.result' audit-report.json | grep -c "TODO" || echo "0")
+        if [ "$TODO_COUNT" -gt 10 ]; then
+          echo "❌ Too many TODOs: $TODO_COUNT (max: 10)"
+          exit 1
+        fi
+        echo "✅ TODO count acceptable: $TODO_COUNT"
+    
+    - name: Check for credentials
+      run: |
+        autonomous-auditor "Search for password pattern" --json --quiet > creds-check.json
+        if jq -e '.result | contains("password")' creds-check.json; then
+          echo "❌ Potential credentials found"
+          exit 1
+        fi
+        echo "✅ No credentials detected"
+    
+    - name: Upload audit report
+      uses: actions/upload-artifact@v4
+      with:
+        name: audit-report
+        path: audit-report.json
+```
+
+### Pre-commit Hook
+```bash
+#!/bin/sh
+# .git/hooks/pre-commit
+autonomous-auditor "Search for TODO pattern" --quiet
+if [ $? -ne 0 ]; then
+  echo "❌ Audit failed - commit blocked"
+  exit 1
+fi
+```
+
+### Nightly Audit
+```yaml
+# .github/workflows/nightly-audit.yml
+name: Nightly Audit
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM daily
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Full audit
+      run: |
+        autonomous-auditor "Audit this codebase" --json > nightly-audit.json
+        # Send to monitoring system, Slack, etc.
+```
 
 ## Usage
 
@@ -38,6 +155,13 @@ uv run python cli.py --mode codebase_auditor "Search for TODO pattern"
 # Full audit suite
 uv run python auditor.py --audit full
 ```
+
+## What It Finds
+
+- **TODO/FIXME comments** - Technical debt markers
+- **Import patterns** - Dependency usage analysis  
+- **Configuration files** - .env, config.json, settings files
+- **File structure** - Directory organization and key files
 
 ## Status: Production Ready ✅
 
