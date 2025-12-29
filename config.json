@@ -1,0 +1,8 @@
+{
+  "model": "llama3.2:1b",
+  "max_steps": 8,
+  "retry_limit": 2,
+  "memory_db": "agent_memory.db",
+  "log_level": "INFO",
+  "timeout": 30
+}
