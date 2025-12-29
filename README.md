@@ -30,6 +30,22 @@
 
 ## Installation
 
+### Easy Installation (Recommended)
+
+```bash
+# Clone and install system-wide
+git clone https://github.com/vinay0094k/autonomous-auditor.git
+cd autonomous-auditor
+./install.sh
+
+# Now works from any directory
+cd /any/repository
+autonomous-auditor --mode repo_hygiene "Audit this repo" --format json --out report.json
+audit-policy report.json --pack soc2
+```
+
+### Manual Installation
+
 ```bash
 # Install from source
 git clone https://github.com/vinay0094k/autonomous-auditor
@@ -41,35 +57,35 @@ pip install -e .
 
 ```bash
 # Basic repo hygiene audit
-python cli.py --mode repo_hygiene "Audit this repo" --format json --out report.json
+autonomous-auditor --mode repo_hygiene "Audit this repo" --format json --out report.json
 
 # Apply SOC2 compliance policy
-python policy.py report.json --pack soc2
+audit-policy report.json --pack soc2
 
 # Dry-run mode (preview without enforcement)
-python policy.py report.json --pack gdpr --dry-run
+audit-policy report.json --pack gdpr --dry-run
 
 # Explain policy rules
-python policy.py report.json --pack finserv --explain
+audit-policy report.json --pack finserv --explain
 
 # Generate compliance evidence
-python policy.py report.json --pack soc2 --evidence
+audit-policy report.json --pack soc2 --evidence
 ```
 
 ## Policy Packs
 
 ```bash
 # SOC2 Type II Compliance
-python policy.py audit.json --pack soc2
+audit-policy audit.json --pack soc2
 
 # GDPR Data Protection  
-python policy.py audit.json --pack gdpr
+audit-policy audit.json --pack gdpr
 
 # Financial Services Regulatory
-python policy.py audit.json --pack finserv
+audit-policy audit.json --pack finserv
 
 # Custom policy file
-python policy.py audit.json --policy custom-policy.yaml
+audit-policy audit.json --policy custom-policy.yaml
 ```
 
 ## Configuration

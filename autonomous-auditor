@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+"""
+Autonomous Auditor - Global CLI Entry Point
+Makes the auditor available system-wide as 'autonomous-auditor' command
+"""
+
+import sys
+import os
+from pathlib import Path
+
+# Add the auditor directory to Python path
+auditor_dir = Path(__file__).parent
+sys.path.insert(0, str(auditor_dir))
+
+# Import and run the CLI
+from cli import main
+
+if __name__ == "__main__":
+    main()
