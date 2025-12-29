@@ -11,10 +11,14 @@
 
 ## What This IS
 
-- ✅ **Deterministic Autonomous Auditor** - Reliable, predictable codebase inspection
-- ✅ **Bounded and Safe** - Read-only operations with strict limits
-- ✅ **Self-Healing** - Automatically recovers from failures
-- ✅ **Production-Ready** - Frozen architecture with tested guarantees
+- ✅ **Deterministic CI-Native Gate** - Drop-in repository hygiene enforcement for CI/CD pipelines
+- ✅ **Enterprise Policy Packs** - SOC2, GDPR, FinServ compliance templates ready for purchase
+- ✅ **Evidence Generation** - Compliance reports with audit trails for security teams
+- ✅ **Multi-Mode Specialization** - Codebase auditor, config inspector, repo hygiene agent
+- ✅ **Self-Healing Architecture** - Automatically recovers from LLM failures with plan revision
+- ✅ **Contract-Based Policies** - Clear scope, non-goals, and guarantees for enterprise buyers
+- ✅ **Exit Code Standards** - 0=success, 1=warning, 2=failure for reliable CI integration
+- ✅ **Dry-Run & Explain Modes** - Preview enforcement and understand rules before deployment
 
 ## Why This Matters
 
