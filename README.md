@@ -1,4 +1,4 @@
-# Autonomous Agent System v1.0
+# Autonomous Auditor v1.1.0
 
 **A deterministic, CI-native repository hygiene gate that enforces policy using bounded, explainable analysis — not heuristics or learning.**
 
@@ -31,11 +31,8 @@
 ## Installation
 
 ```bash
-# Install from PyPI (when published)
-pip install autonomous-auditor
-
-# Or install from source
-git clone https://github.com/yourusername/autonomous-auditor
+# Install from source
+git clone https://github.com/vinay0094k/autonomous-auditor
 cd autonomous-auditor
 pip install -e .
 ```
@@ -43,20 +40,36 @@ pip install -e .
 ## Quick Start
 
 ```bash
-# Basic codebase audit
-autonomous-auditor --mode codebase_auditor "Audit this codebase"
+# Basic repo hygiene audit
+python cli.py --mode repo_hygiene "Audit this repo" --format json --out report.json
 
-# Find specific patterns
-autonomous-auditor --mode codebase_auditor "Search for TODO pattern"
+# Apply SOC2 compliance policy
+python policy.py report.json --pack soc2
 
-# Machine-readable output for CI
-autonomous-auditor --mode codebase_auditor "Audit this codebase" --json
+# Dry-run mode (preview without enforcement)
+python policy.py report.json --pack gdpr --dry-run
 
-# Full audit suite
-auditor --audit full
+# Explain policy rules
+python policy.py report.json --pack finserv --explain
 
-# Get help
-autonomous-auditor --help
+# Generate compliance evidence
+python policy.py report.json --pack soc2 --evidence
+```
+
+## Policy Packs
+
+```bash
+# SOC2 Type II Compliance
+python policy.py audit.json --pack soc2
+
+# GDPR Data Protection  
+python policy.py audit.json --pack gdpr
+
+# Financial Services Regulatory
+python policy.py audit.json --pack finserv
+
+# Custom policy file
+python policy.py audit.json --policy custom-policy.yaml
 ```
 
 ## Configuration
