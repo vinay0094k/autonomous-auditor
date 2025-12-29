@@ -272,3 +272,34 @@ audit-policy compliance.json --pack gdpr --evidence > compliance-report.txt
 ## Status: Production Ready ✅
 
 All core engineering problems solved. System is complete and stable.
+
+## Working with Results
+
+After running audits, you get JSON files with detailed analysis. See [WORKING-WITH-RESULTS.md](WORKING-WITH-RESULTS.md) for complete examples of:
+
+- 📊 **Analyzing JSON results** - Extract data, count issues, check status
+- 📋 **Policy enforcement** - Apply SOC2, GDPR, FinServ compliance  
+- 🏢 **CI/CD integration** - Pre-commit hooks, GitHub Actions workflows
+- 📄 **Report generation** - Executive summaries, compliance evidence
+- 🔄 **Multi-repository workflows** - Batch processing, dashboard integration
+
+### Quick Example
+```bash
+# Run audit
+autonomous-auditor --mode codebase_auditor "Find TODOs" --format json --out todos.json
+
+# Analyze results  
+cat todos.json | jq -r '.result' | grep -c "TODO"
+
+# Apply policy
+audit-policy todos.json --pack soc2
+
+# Generate evidence
+audit-policy todos.json --pack soc2 --evidence > compliance-evidence.txt
+```
+
+### Try the Complete Workflow
+```bash
+# Run the example workflow to see everything in action
+./examples/complete-workflow.sh
+```
