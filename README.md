@@ -22,10 +22,11 @@
 
 ## Why This Matters
 
-**Faster** - No complex parsing, just targeted text search  
-**Predictable** - Same input always produces same output  
-**Explainable** - Clear audit trails and bounded operations  
-**Zero False Confidence** - Never claims to find what it cannot verify
+**Enterprise Ready** - Drop-in CI gate with official adapters, not a tool to wire yourself  
+**Compliance Native** - SOC2, GDPR, FinServ policy packs with audit trails for regulators  
+**Deterministic** - Same input always produces same output, no AI uncertainty  
+**Revenue Generating** - Sellable policy packs ($99-499) with clear business model  
+**Zero Vendor Lock-in** - Standard exit codes, works with any CI system
 
 ## Installation
 
