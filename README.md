@@ -197,6 +197,78 @@ uv run python auditor.py --audit full
 - **Configuration files** - .env, config.json, settings files
 - **File structure** - Directory organization and key files
 
+## What You Can Do
+
+### 🔍 **Repository Analysis Modes**
+
+```bash
+# Codebase Analysis
+autonomous-auditor --mode codebase_auditor "Find all TODO comments" --format json --out todos.json
+autonomous-auditor --mode codebase_auditor "Search for import statements" --format markdown --out imports.md
+autonomous-auditor --mode codebase_auditor "Analyze code complexity" --format summary
+
+# Configuration Security
+autonomous-auditor --mode config_inspector "Check for secrets in config files" --format json --out security.json
+autonomous-auditor --mode config_inspector "Find debug flags" --format summary
+autonomous-auditor --mode config_inspector "Audit environment variables" --format markdown --out env-audit.md
+
+# Repository Hygiene
+autonomous-auditor --mode repo_hygiene "Check repository structure" --format json --out hygiene.json
+autonomous-auditor --mode repo_hygiene "Find build artifacts" --format summary
+autonomous-auditor --mode repo_hygiene "Audit file organization" --format markdown --out structure.md
+```
+
+### 📋 **Enterprise Compliance**
+
+```bash
+# SOC2 Type II Compliance
+audit-policy audit.json --pack soc2
+audit-policy audit.json --pack soc2 --evidence  # Generate compliance evidence
+
+# GDPR Data Protection
+audit-policy audit.json --pack gdpr --dry-run   # Preview without enforcement
+audit-policy audit.json --pack gdpr --explain   # Understand all rules
+
+# Financial Services Regulatory
+audit-policy audit.json --pack finserv
+audit-policy audit.json --pack finserv --evidence
+
+# Custom Organizational Policies
+audit-policy audit.json --policy my-company-policy.yaml
+```
+
+### 🏢 **Enterprise Use Cases**
+
+```bash
+# CI/CD Integration - Pre-commit hooks
+autonomous-auditor --mode repo_hygiene "Quick check" --format summary
+if [ $? -ne 0 ]; then echo "Commit blocked"; exit 1; fi
+
+# Security Audits
+autonomous-auditor --mode config_inspector "Find potential secrets" --format json --out security-scan.json
+audit-policy security-scan.json --pack soc2 --evidence
+
+# Multi-Repository Management
+for repo in /path/to/repo1 /path/to/repo2; do
+    cd "$repo"
+    autonomous-auditor --mode repo_hygiene "Audit $(basename $repo)" --format json --out audit.json
+    audit-policy audit.json --pack soc2
+done
+
+# Compliance Reporting
+autonomous-auditor --mode repo_hygiene "Compliance audit" --format json --out compliance.json
+audit-policy compliance.json --pack gdpr --evidence > compliance-report.txt
+```
+
+### 💼 **Business Applications**
+
+- **Regulatory Compliance** - SOC2, GDPR, FinServ audit trails
+- **Risk Management** - Identify security and compliance risks  
+- **Quality Gates** - Automated CI/CD quality enforcement
+- **Technical Debt** - Track and manage code quality metrics
+- **Vendor Management** - Audit third-party code and integrations
+- **Documentation** - Generate compliance and audit documentation
+
 ## Status: Production Ready ✅
 
 All core engineering problems solved. System is complete and stable.
