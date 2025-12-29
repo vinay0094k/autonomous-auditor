@@ -12,6 +12,13 @@ from pathlib import Path
 auditor_dir = Path(__file__).parent
 sys.path.insert(0, str(auditor_dir))
 
+# Check if we're in a virtual environment, if not, use the project's venv
+venv_python = auditor_dir / ".venv" / "bin" / "python"
+if not hasattr(sys, 'real_prefix') and not (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+    if venv_python.exists():
+        # Re-execute with venv python
+        os.execv(str(venv_python), [str(venv_python)] + [__file__] + sys.argv[1:])
+
 # Import and run the policy CLI
 from policy import main
 

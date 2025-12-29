@@ -44,17 +44,28 @@ fi
 
 # Install Python dependencies
 echo ""
-echo "📦 Installing Python dependencies..."
+echo "📦 Setting up Python environment..."
 cd "$AUDITOR_DIR"
 
-if command -v uv &> /dev/null; then
-    uv sync
-elif command -v pip &> /dev/null; then
-    pip install -r requirements.txt 2>/dev/null || pip install langgraph ollama rich python-dotenv
-else
-    echo "❌ No Python package manager found (pip or uv required)"
-    exit 1
+# Create virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv .venv
 fi
+
+# Activate virtual environment and install dependencies
+echo "Installing dependencies in virtual environment..."
+source .venv/bin/activate
+
+if command -v uv &> /dev/null; then
+    echo "Using uv for dependency management..."
+    uv sync 2>/dev/null || uv add langgraph ollama rich python-dotenv pyyaml
+else
+    echo "Using pip for dependency management..."
+    pip install -r requirements.txt 2>/dev/null || pip install langgraph ollama rich python-dotenv pyyaml
+fi
+
+deactivate
 
 echo ""
 echo "🎉 Installation complete!"
