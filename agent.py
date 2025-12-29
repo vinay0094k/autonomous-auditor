@@ -196,6 +196,20 @@ You are operating in Codebase Auditor mode.
 Your goal is to audit a source code repository.
 Prefer search_text for TODO, FIXME, import, and config patterns.
 """
+        elif "Config Inspector" in system_prompt:
+            specialization_overlay = """
+SPECIALIZATION CONTEXT:
+You are operating in Config Inspector mode.
+Your goal is to inspect configuration files and settings.
+Prefer search_text for .env, config.json, DEBUG, localhost, and dev patterns.
+"""
+        elif "Repo Hygiene Agent" in system_prompt:
+            specialization_overlay = """
+SPECIALIZATION CONTEXT:
+You are operating in Repo Hygiene mode.
+Your goal is to inspect repository quality and organization.
+Prefer search_text for README, LICENSE, .log, TODO, and artifact patterns.
+"""
 
         prompt = f"""{specialization_overlay}
 

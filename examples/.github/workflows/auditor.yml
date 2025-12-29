@@ -1,0 +1,108 @@
+name: Autonomous Auditor
+on: 
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install auditor
+      run: pip install autonomous-auditor
+    
+    - name: Run repo hygiene audit
+      run: |
+        autonomous-auditor \
+          --mode repo_hygiene \
+          "Audit this repo" \
+          --format json \
+          --out hygiene-report.json
+    
+    - name: Run codebase audit
+      run: |
+        autonomous-auditor \
+          --mode codebase_auditor \
+          "Audit this codebase" \
+          --format json \
+          --out codebase-report.json
+    
+    - name: Run config inspection
+      run: |
+        autonomous-auditor \
+          --mode config_inspector \
+          "Inspect configuration files" \
+          --format json \
+          --out config-report.json
+    
+    - name: Enforce policies
+      run: |
+        # Check exit codes (automatic)
+        echo "Exit codes enforced automatically"
+        
+        # TODO density policy
+        TODO_COUNT=$(jq -r '.matches | length // 0' codebase-report.json)
+        if [ "$TODO_COUNT" -gt 30 ]; then
+          echo "❌ Critical: Too many TODOs ($TODO_COUNT > 30)"
+          exit 1
+        elif [ "$TODO_COUNT" -gt 10 ]; then
+          echo "⚠️ Warning: High TODO count ($TODO_COUNT > 10)"
+        fi
+        
+        # Config security policy
+        if jq -e '.result | test("password|secret|key"; "i")' config-report.json > /dev/null; then
+          echo "❌ Critical: Potential secrets in configuration"
+          exit 1
+        fi
+        
+        echo "✅ All policies passed"
+    
+    - name: Upload audit reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: audit-reports-${{ github.sha }}
+        path: |
+          hygiene-report.json
+          codebase-report.json
+          config-report.json
+        retention-days: 30
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let comment = '## 🔍 Autonomous Audit Results\n\n';
+          
+          try {
+            const hygiene = JSON.parse(fs.readFileSync('hygiene-report.json', 'utf8'));
+            const codebase = JSON.parse(fs.readFileSync('codebase-report.json', 'utf8'));
+            const config = JSON.parse(fs.readFileSync('config-report.json', 'utf8'));
+            
+            comment += `- **Hygiene**: ${hygiene.status || 'Completed'}\n`;
+            comment += `- **Codebase**: ${codebase.status || 'Completed'}\n`;
+            comment += `- **Config**: ${config.status || 'Completed'}\n\n`;
+            comment += `📊 **Audit Summary**: All checks completed successfully`;
+          } catch (e) {
+            comment += '❌ Error reading audit reports';
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });

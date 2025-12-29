@@ -1,6 +1,6 @@
 # Autonomous Agent System v1.0
 
-**A Deterministic Autonomous Auditor** - Production-ready codebase analysis with bounded behavior and graceful failure handling.
+**A deterministic, CI-native repository hygiene gate that enforces policy using bounded, explainable analysis — not heuristics or learning.**
 
 ## What This Is NOT
 

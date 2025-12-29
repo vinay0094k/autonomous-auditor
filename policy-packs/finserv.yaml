@@ -1,0 +1,49 @@
+metadata:
+  standard: Financial Services Regulatory
+  scope: Banking & financial regulatory controls in codebase
+  non_goals:
+    - No transaction monitoring
+    - No fraud detection
+    - No real-time compliance
+    - No customer data validation
+    - No regulatory reporting
+  guarantees:
+    - Deterministic outcomes
+    - Repeatable enforcement
+    - CI-safe exit codes
+    - Regulatory audit trails
+  compliance_areas:
+    - Financial data handling
+    - Audit documentation
+    - Compliance documentation
+    - Sensitive pattern detection
+
+name: "Financial Services Compliance"
+version: "1.0.0"
+description: "Banking and financial regulatory controls"
+
+repo_hygiene:
+  missing_license: fail
+  missing_audit_log: fail
+  
+codebase_auditor:
+  todo_density:
+    warn: 0
+    fail: 1
+  financial_data_detected: fail
+    
+config_inspector:
+  encryption_required: fail
+  audit_logging: fail
+  
+custom_rules:
+  required_files:
+    - "AUDIT.md"
+    - "COMPLIANCE.md"
+  forbidden_patterns:
+    - "test_card"
+    - "dummy_account"
+  financial_patterns:
+    - "credit_card"
+    - "account_number"
+    - "routing_number"

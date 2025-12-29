@@ -1,0 +1,43 @@
+{
+  "exit_code": 2,
+  "status": "failure",
+  "violations": [
+    {
+      "rule": "log_files",
+      "message": "Log files detected in repository",
+      "category": "data_exposure",
+      "severity": "critical"
+    },
+    {
+      "rule": "build_artifacts",
+      "message": "Build artifact detected: __pycache__",
+      "category": "repository_hygiene",
+      "severity": "critical"
+    }
+  ],
+  "policy_file": "policy-packs/soc2.yaml",
+  "audit_file": "validation-after.json",
+  "metadata": {
+    "standard": "SOC2 Type II",
+    "scope": "Repository hygiene & configuration exposure",
+    "non_goals": [
+      "No vulnerability scanning",
+      "No runtime security",
+      "No penetration testing",
+      "No code quality analysis",
+      "No dependency auditing"
+    ],
+    "guarantees": [
+      "Deterministic outcomes",
+      "Repeatable enforcement",
+      "CI-safe exit codes",
+      "Audit trail generation"
+    ],
+    "compliance_areas": [
+      "Security controls documentation",
+      "Configuration management",
+      "Change management processes",
+      "Access control documentation"
+    ]
+  }
+}

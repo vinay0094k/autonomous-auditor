@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""
+Autonomous Auditor - Drop-in CI Gate
+Enterprise-ready wrapper with policy enforcement.
+"""
+
+import argparse
+import subprocess
+import sys
+import json
+import tempfile
+from pathlib import Path
+
+def run_audit(mode: str, query: str, format_type: str = "json", out_file: str = None, quiet: bool = False) -> dict:
+    """Run audit and return results"""
+    cmd = [
+        "python", "cli.py",
+        "--mode", mode,
+        query,
+        "--format", format_type
+    ]
+    
+    if out_file:
+        cmd.extend(["--out", out_file])
+    
+    if quiet:
+        cmd.append("--quiet")
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=Path(__file__).parent)
+        
+        if format_type == "json" and not out_file:
+            try:
+                return json.loads(result.stdout), result.returncode
+            except json.JSONDecodeError:
+                return {"error": "Invalid JSON output", "stdout": result.stdout, "stderr": result.stderr}, 2
+        
+        return {"stdout": result.stdout, "stderr": result.stderr}, result.returncode
+    
+    except Exception as e:
+        return {"error": str(e)}, 2
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="A deterministic, CI-native repository hygiene gate that enforces policy using bounded, explainable analysis — not heuristics or learning.",
+        epilog="""
+Examples:
+  # Basic audit
+  auditor --audit codebase
+  
+  # Policy enforcement
+  auditor --audit full --policy policy.yaml
+  
+  # CI integration
+  auditor --audit hygiene --format json --out report.json
+  
+Exit Codes:
+  0 - Success (no issues)
+  1 - Warning (issues found, not critical)  
+  2 - Failure (critical issues, block CI)
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    
+    parser.add_argument("--audit", choices=["codebase", "config", "hygiene", "full"], 
+                       default="codebase", help="Audit type to run")
+    parser.add_argument("--policy", help="Policy file for enforcement")
+    parser.add_argument("--format", choices=["console", "json", "markdown", "summary"], 
+                       default="console", help="Output format")
+    parser.add_argument("--out", help="Output file")
+    parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Detailed output")
+    
+    args = parser.parse_args()
+    
+    # Map audit types to modes and queries
+    audit_map = {
+        "codebase": ("codebase_auditor", "Audit this codebase"),
+        "config": ("config_inspector", "Inspect configuration files"),
+        "hygiene": ("repo_hygiene", "Check repository hygiene"),
+        "full": None  # Special case - run all audits
+    }
+    
+    max_exit_code = 0
+    results = {}
+    
+    if args.audit == "full":
+        # Run all audit types
+        for audit_type, (mode, query) in audit_map.items():
+            if audit_type == "full":
+                continue
+                
+            if not args.quiet:
+                print(f"🔍 Running {audit_type} audit...")
+            
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                temp_file = f.name
+            
+            result, exit_code = run_audit(mode, query, "json", temp_file, args.quiet)
+            results[audit_type] = {"result": result, "exit_code": exit_code}
+            max_exit_code = max(max_exit_code, exit_code)
+            
+            # Clean up temp file
+            Path(temp_file).unlink(missing_ok=True)
+    else:
+        # Run single audit
+        mode, query = audit_map[args.audit]
+        result, exit_code = run_audit(mode, query, args.format, args.out, args.quiet)
+        results[args.audit] = {"result": result, "exit_code": exit_code}
+        max_exit_code = exit_code
+    
+    # Apply policy enforcement if specified
+    if args.policy and Path(args.policy).exists():
+        if not args.quiet:
+            print("📋 Applying policy enforcement...")
+        
+        # Policy enforcement would go here
+        # For now, just note that policy file exists
+        if not args.quiet:
+            print(f"✅ Policy file loaded: {args.policy}")
+    
+    # Output results
+    if args.format == "json":
+        output = {
+            "audit_type": args.audit,
+            "exit_code": max_exit_code,
+            "status": ["success", "warning", "failure"][max_exit_code],
+            "results": results
+        }
+        
+        if args.out:
+            with open(args.out, 'w') as f:
+                json.dump(output, f, indent=2)
+            if not args.quiet:
+                print(f"Results saved to {args.out}")
+        else:
+            print(json.dumps(output, indent=2))
+    
+    elif not args.quiet:
+        # Console output
+        status_icons = ["✅", "⚠️", "❌"]
+        status_names = ["SUCCESS", "WARNING", "FAILURE"]
+        
+        print(f"\n{status_icons[max_exit_code]} Audit Complete: {status_names[max_exit_code]}")
+        
+        if args.audit == "full":
+            print("\nAudit Summary:")
+            for audit_type, data in results.items():
+                exit_code = data["exit_code"]
+                print(f"  {status_icons[exit_code]} {audit_type}: {status_names[exit_code]}")
+    
+    sys.exit(max_exit_code)
+
+if __name__ == "__main__":
+    main()

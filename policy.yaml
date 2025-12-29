@@ -1,0 +1,40 @@
+# Example Policy Configuration
+
+# Repository Hygiene Policies
+repo_hygiene:
+  missing_license: fail        # Block if no LICENSE file
+  missing_readme: warn         # Warn if no README file
+  todo_density:               # TODO comment thresholds
+    warn: 10                  # Warn at 10+ TODOs
+    fail: 30                  # Fail at 30+ TODOs
+  log_files: warn             # Warn if .log files in repo
+  build_artifacts: fail       # Fail if build artifacts present
+
+# Codebase Auditor Policies  
+codebase_auditor:
+  todo_density:               # TODO comment thresholds
+    warn: 10
+    fail: 30
+  fixme_comments: warn        # Warn on any FIXME comments
+  import_count:               # Import statement thresholds
+    warn: 50                  # Warn at 50+ imports
+    fail: 100                 # Fail at 100+ imports
+
+# Configuration Inspector Policies
+config_inspector:
+  secrets_detected: fail      # Fail if potential secrets found
+  debug_flags: warn           # Warn on debug flags in config
+  localhost_references: warn  # Warn on localhost in config
+  missing_env_example: warn   # Warn if no .env.example
+
+# Custom Rules (examples)
+# custom_rules:
+#   max_file_size:
+#     warn: 1000000           # 1MB
+#     fail: 5000000           # 5MB
+#   required_files:
+#     - "CHANGELOG.md"
+#     - "CONTRIBUTING.md"
+#   forbidden_patterns:
+#     - "console.log"
+#     - "debugger"

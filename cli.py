@@ -7,6 +7,7 @@ Production wrapper for the core agent system.
 import argparse
 import json
 import logging
+import datetime
 from pathlib import Path
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
@@ -128,9 +129,13 @@ def display_results(result: dict, verbose: bool = False):
     status = "✅ Success" if result.get("step_success", False) else "❌ Failed"
     console.print(f"\n[bold green]{status}[/bold green]")
     
-    # Add audit summary for codebase_auditor mode
+    # Add audit summary for specialized modes
     if result.get("system_prompt", "").startswith("You are a Codebase Auditor"):
-        display_audit_summary(result)
+        display_audit_summary(result, "codebase")
+    elif result.get("system_prompt", "").startswith("You are a Config Inspector"):
+        display_audit_summary(result, "config")
+    elif result.get("system_prompt", "").startswith("You are a Repo Hygiene Agent"):
+        display_audit_summary(result, "repo")
     
     # Summary table
     table = Table(title="Execution Summary")
@@ -158,38 +163,191 @@ def display_results(result: dict, verbose: bool = False):
         console.print(f"\n[bold]Final Result:[/bold] {result.get('result', 'No result')}")
         console.print(f"[bold]Last Thought:[/bold] {result.get('thought', 'No thought')}")
 
-def display_audit_summary(result: dict):
+def display_audit_summary(result: dict, mode: str = "codebase"):
+    """Format output according to specified format"""
+    
+    if format_type == "json":
+        return json.dumps({
+            "task": result.get("task", ""),
+            "status": "success" if result.get("step_success", False) else "failed",
+            "mode": mode,
+            "steps_completed": result.get("step_count", 0),
+            "plan_steps": len(result.get("plan", [])),
+            "failures": result.get("failure_count", 0),
+            "result": result.get("result", ""),
+            "plan": result.get("plan", []),
+            "timestamp": datetime.datetime.now().isoformat()
+        }, indent=2)
+    
+    elif format_type == "markdown":
+        status_icon = "✅" if result.get("step_success", False) else "❌"
+        md = f"""# Audit Report
+
+**Status**: {status_icon} {"Success" if result.get("step_success", False) else "Failed"}  
+**Mode**: {mode}  
+**Task**: {result.get("task", "")}  
+**Steps Completed**: {result.get("step_count", 0)}  
+**Failures**: {result.get("failure_count", 0)}  
+
+## Plan Executed
+"""
+        for i, step in enumerate(result.get("plan", []), 1):
+            status = "✅" if i <= result.get("current_step", 0) else "⏳"
+            action = step.get("action", "unknown")
+            target = step.get("target", "")
+            md += f"{status} {i}. {action} {target}\n"
+        
+        md += f"\n## Result\n```\n{result.get('result', 'No result')}\n```\n"
+        return md
+    
+    elif format_type == "summary":
+        status = "SUCCESS" if result.get("step_success", False) else "FAILED"
+        return f"{status}: {result.get('observation', 'No observation')} | Steps: {result.get('step_count', 0)} | Failures: {result.get('failure_count', 0)}"
+    
+    else:  # console format
+        return None  # Use existing display_results function
     """Display audit-specific summary"""
-    console.print("\n[bold yellow]Audit Summary:[/bold yellow]")
-    
-    # Simple pattern matching on results
-    final_result = result.get("result", "")
-    
-    if "import" in final_result.lower():
-        import_count = final_result.count("import")
-        console.print(f"• Import statements found: {import_count}")
-    
-    if "todo" in final_result.lower():
-        console.print("• TODO comments detected")
-    
-    if "config" in final_result.lower() or ".env" in final_result or "config.json" in final_result:
-        console.print("• Configuration files present")
+    if mode == "codebase":
+        console.print("\n[bold yellow]Codebase Audit Summary:[/bold yellow]")
+        final_result = result.get("result", "")
+        
+        if "import" in final_result.lower():
+            import_count = final_result.count("import")
+            console.print(f"• Import statements found: {import_count}")
+        
+        if "todo" in final_result.lower():
+            console.print("• TODO comments detected")
+        
+        if "config" in final_result.lower() or ".env" in final_result or "config.json" in final_result:
+            console.print("• Configuration files present")
+            
+    elif mode == "config":
+        console.print("\n[bold yellow]Config Inspection Summary:[/bold yellow]")
+        final_result = result.get("result", "")
+        
+        if ".env" in final_result:
+            console.print("• Environment files detected")
+        
+        if "config.json" in final_result or "settings" in final_result.lower():
+            console.print("• Configuration files found")
+            
+        if "debug" in final_result.lower() or "localhost" in final_result.lower():
+            console.print("• Development flags detected")
+        
+        if "dev" in final_result.lower() or "test" in final_result.lower():
+            console.print("• Environment indicators found")
+            
+    elif mode == "repo":
+        console.print("\n[bold yellow]Repository Hygiene Summary:[/bold yellow]")
+        final_result = result.get("result", "")
+        
+        if "README" in final_result:
+            console.print("• README file present")
+        
+        if "LICENSE" in final_result:
+            console.print("• LICENSE file present")
+            
+        if ".log" in final_result or "log" in final_result.lower():
+            console.print("• Log files detected")
+        
+        if "TODO" in final_result:
+            todo_count = final_result.count("TODO")
+            console.print(f"• TODO markers found: {todo_count}")
+            
+        if ".tmp" in final_result or ".class" in final_result:
+            console.print("• Build artifacts detected")
     
     # Count files analyzed
-    if "SUCCESS:" in final_result:
+    if "SUCCESS:" in result.get("result", ""):
         console.print(f"• Analysis completed successfully")
     
     console.print("")
 
+def format_output(result: dict, format_type: str, mode: str = "default") -> str:
+    """Format output according to specified format"""
+    
+    if format_type == "json":
+        return json.dumps({
+            "task": result.get("task", ""),
+            "status": "success" if result.get("step_success", False) else "failed",
+            "mode": mode,
+            "steps_completed": result.get("step_count", 0),
+            "plan_steps": len(result.get("plan", [])),
+            "failures": result.get("failure_count", 0),
+            "result": result.get("result", ""),
+            "plan": result.get("plan", []),
+            "environment_facts": result.get("environment_facts", ""),
+            "observation": result.get("observation", ""),
+            "timestamp": datetime.datetime.now().isoformat(),
+            "exit_code": result.get("exit_code", 0)
+        }, indent=2)
+    
+    elif format_type == "markdown":
+        status_icon = "✅" if result.get("step_success", False) else "❌"
+        md = f"""# Audit Report
+
+**Status**: {status_icon} {"Success" if result.get("step_success", False) else "Failed"}  
+**Mode**: {mode}  
+**Task**: {result.get("task", "")}  
+**Steps Completed**: {result.get("step_count", 0)}  
+**Failures**: {result.get("failure_count", 0)}  
+
+## Plan Executed
+"""
+        for i, step in enumerate(result.get("plan", []), 1):
+            status = "✅" if i <= result.get("current_step", 0) else "⏳"
+            action = step.get("action", "unknown")
+            target = step.get("target", "")
+            md += f"{status} {i}. {action} {target}\n"
+        
+        md += f"\n## Result\n```\n{result.get('result', 'No result')}\n```\n"
+        return md
+    
+    elif format_type == "summary":
+        status = "SUCCESS" if result.get("step_success", False) else "FAILED"
+        return f"{status}: {result.get('observation', 'No observation')} | Steps: {result.get('step_count', 0)} | Failures: {result.get('failure_count', 0)}"
+    
+    else:  # console format
+        return None  # Use existing display_results function
+
+def determine_exit_code(result: dict) -> int:
+    """Determine exit code based on result"""
+    if not result.get("step_success", False):
+        return 2  # Failure
+    
+    # Check for warnings based on content
+    final_result = result.get("result", "").lower()
+    observation = result.get("observation", "").lower()
+    
+    # Warning conditions
+    warning_indicators = [
+        "todo" in final_result and final_result.count("todo") > 10,
+        "fixme" in final_result,
+        "debug" in final_result,
+        "localhost" in final_result,
+        "password" in final_result or "secret" in final_result,
+        result.get("failure_count", 0) > 0
+    ]
+    
+    if any(warning_indicators):
+        return 1  # Warning
+    
+    return 0  # Success
+
 def main():
     parser = argparse.ArgumentParser(
-        description="🤖 Autonomous Codebase Auditor v1.0",
+        description="A deterministic, CI-native repository hygiene gate that enforces policy using bounded, explainable analysis — not heuristics or learning.",
         epilog="""
 Examples:
   %(prog)s "Audit this codebase"
   %(prog)s --mode codebase_auditor "Find TODO comments"
   %(prog)s --mode codebase_auditor "Search for import statements" --verbose
-  %(prog)s "List files" --quiet --output results.json
+  %(prog)s "List files" --quiet --out results.json
+
+Exit Codes:
+  0 - Success (no issues found)
+  1 - Warning (issues found, but not critical)
+  2 - Failure (critical issues or execution failed)
 
 For more information, visit: https://github.com/yourusername/autonomous-auditor
         """,
@@ -198,8 +356,9 @@ For more information, visit: https://github.com/yourusername/autonomous-auditor
     parser.add_argument("task", help="Task for the agent to execute")
     parser.add_argument("--config", default="config.json", help="Configuration file")
     parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
-    parser.add_argument("--mode", default="default", choices=["default", "codebase_auditor"], help="Agent mode")
-    parser.add_argument("--output", help="Output file for results (JSON)")
+    parser.add_argument("--mode", default="default", choices=["default", "codebase_auditor", "config_inspector", "repo_hygiene"], help="Agent mode")
+    parser.add_argument("--format", default="console", choices=["console", "json", "markdown", "summary"], help="Output format")
+    parser.add_argument("--out", help="Output file for results")
     parser.add_argument("--json", action="store_true", help="Output results as JSON to stdout")
     parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
     parser.add_argument("--verbose", "-v", action="store_true", help="Detailed output")
@@ -212,37 +371,84 @@ For more information, visit: https://github.com/yourusername/autonomous-auditor
     try:
         result = run_agent_with_progress(args.task, config, args.quiet, args.mode)
         
-        if args.output:
-            with open(args.output, 'w') as f:
-                json.dump(result, f, indent=2)
-            if not args.quiet and not args.json:
-                console.print(f"[green]Results saved to {args.output}[/green]")
+        # Determine exit code
+        exit_code = determine_exit_code(result)
         
-        if args.json:
-            # Machine-consumable JSON output
-            json_output = {
-                "task": result.get("task", ""),
-                "status": "success" if result.get("step_success", False) else "failed",
-                "steps_completed": result.get("step_count", 0),
-                "plan_steps": len(result.get("plan", [])),
-                "failures": result.get("failure_count", 0),
-                "result": result.get("result", ""),
-                "plan": result.get("plan", [])
+        # Add metadata for report artifacts
+        if args.out:
+            # Enhanced metadata for artifacts
+            metadata = {
+                "timestamp": datetime.datetime.now().isoformat(),
+                "repo_path": str(Path.cwd()),
+                "specialization": args.mode,
+                "version": "v1.0.0",
+                "exit_code": exit_code
             }
-            print(json.dumps(json_output, indent=2))
-        elif not args.quiet:
-            display_results(result, args.verbose)
+            
+            # Try to get commit hash
+            try:
+                import subprocess
+                commit_hash = subprocess.check_output(
+                    ["git", "rev-parse", "HEAD"], 
+                    stderr=subprocess.DEVNULL
+                ).decode().strip()
+                metadata["commit_hash"] = commit_hash
+            except:
+                metadata["commit_hash"] = "unknown"
+            
+            result.update(metadata)
+        
+        # Determine mode for output formatting
+        mode = args.mode if args.mode != "default" else "general"
+        
+        # Handle different output formats
+        if args.format != "console":
+            formatted_output = format_output(result, args.format, mode)
+            
+            if args.out:
+                with open(args.out, 'w') as f:
+                    f.write(formatted_output)
+                if not args.quiet:
+                    console.print(f"[green]Results saved to {args.out}[/green]")
+            else:
+                print(formatted_output)
         else:
-            # Quiet mode - just print success/failure
-            status = "SUCCESS" if result.get("step_success", False) else "FAILED"
-            print(f"{status}: {result.get('observation', 'No observation')}")
+            # Console format (existing behavior)
+            if args.out:
+                with open(args.out, 'w') as f:
+                    json.dump(result, f, indent=2)
+                if not args.quiet:
+                    console.print(f"[green]Results saved to {args.out}[/green]")
+            
+            if args.json:
+                # Legacy --json flag support
+                json_output = {
+                    "task": result.get("task", ""),
+                    "status": "success" if result.get("step_success", False) else "failed",
+                    "steps_completed": result.get("step_count", 0),
+                    "plan_steps": len(result.get("plan", [])),
+                    "failures": result.get("failure_count", 0),
+                    "result": result.get("result", ""),
+                    "plan": result.get("plan", []),
+                    "exit_code": exit_code
+                }
+                print(json.dumps(json_output, indent=2))
+            elif not args.quiet:
+                display_results(result, args.verbose)
+            else:
+                # Quiet mode - just print success/failure
+                status = "SUCCESS" if result.get("step_success", False) else "FAILED"
+                print(f"{status}: {result.get('observation', 'No observation')}")
+        
+        # Exit with appropriate code
+        exit(exit_code)
             
     except Exception as e:
         if args.quiet:
             print(f"ERROR: {e}")
         else:
             console.print(f"[red]Error: {e}[/red]")
-        exit(1)
+        exit(2)  # Always exit 2 for exceptions
 
 if __name__ == "__main__":
     main()

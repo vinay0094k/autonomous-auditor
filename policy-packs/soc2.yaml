@@ -1,0 +1,49 @@
+metadata:
+  standard: SOC2 Type II
+  scope: Repository hygiene & configuration exposure
+  non_goals:
+    - No vulnerability scanning
+    - No runtime security
+    - No penetration testing
+    - No code quality analysis
+    - No dependency auditing
+  guarantees:
+    - Deterministic outcomes
+    - Repeatable enforcement
+    - CI-safe exit codes
+    - Audit trail generation
+  compliance_areas:
+    - Security controls documentation
+    - Configuration management
+    - Change management processes
+    - Access control documentation
+
+name: "SOC2 Type II Compliance"
+version: "1.0.0"
+description: "SOC2 security and availability controls for enterprise compliance"
+
+repo_hygiene:
+  missing_license: fail
+  missing_readme: fail
+  missing_security_md: fail
+  log_files: fail
+  build_artifacts: fail
+  
+codebase_auditor:
+  todo_density:
+    warn: 5
+    fail: 15
+  secrets_detected: fail
+  
+config_inspector:
+  debug_flags: fail
+  localhost_references: fail
+  missing_env_example: fail
+
+custom_rules:
+  required_files:
+    - "SECURITY.md"
+    - ".github/CODEOWNERS"
+  forbidden_patterns:
+    - "console.log"
+    - "print("

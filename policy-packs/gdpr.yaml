@@ -1,0 +1,43 @@
+metadata:
+  standard: GDPR
+  scope: Data protection & privacy controls in repository
+  non_goals:
+    - No runtime data monitoring
+    - No database encryption validation
+    - No user consent tracking
+    - No data breach detection
+    - No cross-border transfer validation
+  guarantees:
+    - Deterministic outcomes
+    - Repeatable enforcement
+    - CI-safe exit codes
+    - Privacy-by-design validation
+  compliance_areas:
+    - Data handling documentation
+    - Privacy policy presence
+    - Data retention policies
+    - Personal data pattern detection
+
+name: "GDPR Data Protection"
+version: "1.0.0"
+description: "GDPR privacy and data protection controls"
+
+repo_hygiene:
+  missing_privacy_policy: fail
+  missing_data_retention: warn
+  
+config_inspector:
+  data_collection_flags: warn
+  analytics_tracking: warn
+  
+custom_rules:
+  required_files:
+    - "PRIVACY.md"
+    - "DATA_RETENTION.md"
+  data_patterns:
+    warn_on:
+      - "email"
+      - "user_data"
+    fail_on:
+      - "personal_data"
+      - "sensitive_info"
