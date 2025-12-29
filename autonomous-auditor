@@ -1,26 +1,16 @@
-#!/usr/bin/env python3
-"""
-Autonomous Auditor - Global CLI Entry Point
-Makes the auditor available system-wide as 'autonomous-auditor' command
-"""
+#!/usr/bin/env bash
+# Autonomous Auditor - Global CLI Entry Point
+# Automatically uses the project's virtual environment
 
-import sys
-import os
-from pathlib import Path
+# Get the real path of this script (follow symlinks)
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+AUDITOR_DIR="$(dirname "$SCRIPT_PATH")"
+VENV_PYTHON="$AUDITOR_DIR/.venv/bin/python"
 
-# Add the auditor directory to Python path
-auditor_dir = Path(__file__).parent
-sys.path.insert(0, str(auditor_dir))
-
-# Check if we're in a virtual environment, if not, use the project's venv
-venv_python = auditor_dir / ".venv" / "bin" / "python"
-if not hasattr(sys, 'real_prefix') and not (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
-    if venv_python.exists():
-        # Re-execute with venv python
-        os.execv(str(venv_python), [str(venv_python)] + [__file__] + sys.argv[1:])
-
-# Import and run the CLI
-from cli import main
-
-if __name__ == "__main__":
-    main()
+# Use virtual environment if it exists
+if [ -f "$VENV_PYTHON" ]; then
+    exec "$VENV_PYTHON" "$AUDITOR_DIR/cli.py" "$@"
+else
+    # Fallback to system python
+    exec python3 "$AUDITOR_DIR/cli.py" "$@"
+fi
