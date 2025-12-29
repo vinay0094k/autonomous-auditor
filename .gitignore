@@ -7,4 +7,26 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
+
+# Runtime files (should not be committed)
+*.log
+*.db
+agent_memory.db
+
+# Test/demo output files
+*-report.json
+*-audit.json
+ci-test.json
+validation-*.json
+soc2-*.json
+hygiene-report.json
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+.env.local
+
+# Keep config.json as template
+!config.json
