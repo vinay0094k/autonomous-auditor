@@ -210,11 +210,13 @@ def main():
     # Handle policy packs
     policy_file = args.policy
     if args.pack:
-        pack_file = f"policy-packs/{args.pack}.yaml"
-        if Path(pack_file).exists():
-            policy_file = pack_file
+        # Get the directory where this script is located
+        script_dir = Path(__file__).parent
+        pack_file = script_dir / "policy-packs" / f"{args.pack}.yaml"
+        if pack_file.exists():
+            policy_file = str(pack_file)
         else:
-            print(f"Error: Policy pack '{args.pack}' not found", file=sys.stderr)
+            print(f"Error: Policy pack '{args.pack}' not found at {pack_file}", file=sys.stderr)
             sys.exit(2)
     
     # Handle explain mode

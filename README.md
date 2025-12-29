@@ -57,19 +57,19 @@ pip install -e .
 
 ```bash
 # Basic repo hygiene audit
-autonomous-auditor --mode repo_hygiene "Audit this repo" --format json --out report.json
+autonomous-auditor --mode repo_hygiene "Audit this repo" --format json --out audit.json
 
 # Apply SOC2 compliance policy
-audit-policy report.json --pack soc2
+audit-policy audit.json --pack soc2
 
 # Dry-run mode (preview without enforcement)
-audit-policy report.json --pack gdpr --dry-run
+audit-policy audit.json --pack gdpr --dry-run
 
 # Explain policy rules
-audit-policy report.json --pack finserv --explain
+audit-policy audit.json --pack finserv --explain
 
 # Generate compliance evidence
-audit-policy report.json --pack soc2 --evidence
+audit-policy audit.json --pack soc2 --evidence
 ```
 
 ## Policy Packs
