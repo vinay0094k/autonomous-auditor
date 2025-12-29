@@ -105,8 +105,11 @@ class PolicyEngine:
     def evaluate_rule(self, rule_name: str, rule_config: Any, result_text: str, audit_result: Dict[str, Any]) -> Tuple[int, str]:
         """Evaluate a single policy rule"""
         
-        # Get environment facts for file detection
-        env_facts = audit_result.get("environment_facts", "").lower()
+        # Get environment facts for file detection (handle both old and new format)
+        env_facts = audit_result.get("environment_facts", "")
+        if not env_facts and "environment" in audit_result:
+            env_facts = audit_result["environment"].get("current_directory", "")
+        
         combined_text = (result_text + " " + env_facts).lower()
         
         if rule_name == "missing_license":
