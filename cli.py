@@ -267,6 +267,30 @@ def format_output(result: dict, format_type: str, mode: str = "default") -> str:
     """Format output according to specified format"""
     
     if format_type == "json":
+        # Clean up environment_facts for better readability
+        env_facts = result.get("environment_facts", "")
+        if env_facts:
+            # Extract just the key information
+            lines = env_facts.split('\n')
+            current_dir = lines[0] if lines else ""
+            
+            # Count files by type
+            text_files = env_facts.count('[text]')
+            binary_files = env_facts.count('[binary]')
+            directories = env_facts.count('drwx')
+            
+            clean_env_facts = {
+                "current_directory": current_dir.replace("Current directory: ", ""),
+                "summary": {
+                    "text_files": text_files,
+                    "binary_files": binary_files, 
+                    "directories": directories,
+                    "total_items": text_files + binary_files + directories
+                }
+            }
+        else:
+            clean_env_facts = {}
+        
         return json.dumps({
             "task": result.get("task", ""),
             "status": "success" if result.get("step_success", False) else "failed",
@@ -276,7 +300,7 @@ def format_output(result: dict, format_type: str, mode: str = "default") -> str:
             "failures": result.get("failure_count", 0),
             "result": result.get("result", ""),
             "plan": result.get("plan", []),
-            "environment_facts": result.get("environment_facts", ""),
+            "environment": clean_env_facts,
             "observation": result.get("observation", ""),
             "timestamp": datetime.datetime.now().isoformat(),
             "exit_code": result.get("exit_code", 0)
@@ -433,9 +457,10 @@ For more information, visit: https://github.com/yourusername/autonomous-auditor
                     "exit_code": exit_code
                 }
                 print(json.dumps(json_output, indent=2))
-            elif not args.quiet:
+            elif not args.quiet and args.format == "console":
+                # Only show detailed results for console format
                 display_results(result, args.verbose)
-            else:
+            elif args.quiet:
                 # Quiet mode - just print success/failure
                 status = "SUCCESS" if result.get("step_success", False) else "FAILED"
                 print(f"{status}: {result.get('observation', 'No observation')}")
