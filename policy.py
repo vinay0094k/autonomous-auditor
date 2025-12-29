@@ -110,12 +110,16 @@ class PolicyEngine:
         combined_text = (result_text + " " + env_facts).lower()
         
         if rule_name == "missing_license":
-            if "license" not in combined_text:
-                return self.severity_to_code(rule_config), "LICENSE file not found"
+            # Check for LICENSE file in various forms
+            if any(license_indicator in combined_text for license_indicator in ["license", "licence", "copying", "copyright"]):
+                return 0, ""  # Found license
+            return self.severity_to_code(rule_config), "LICENSE file not found"
         
         elif rule_name == "missing_readme":
-            if "readme" not in combined_text:
-                return self.severity_to_code(rule_config), "README file not found"
+            # Check for README file in various forms
+            if any(readme_indicator in combined_text for readme_indicator in ["readme", "read_me", "readme.md", "readme.txt"]):
+                return 0, ""  # Found readme
+            return self.severity_to_code(rule_config), "README file not found"
         
         elif rule_name == "todo_density":
             todo_count = combined_text.count("todo")
